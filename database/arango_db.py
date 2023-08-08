@@ -13,7 +13,7 @@ transfers_collection = db.collection('test_transfers')
 def get_transfers_by_group(token_address, address_list, start_timestamp, end_timestamp):
     formatted_address_list = [f"wallets/{address}" for address in address_list]
     query = f"""
-            FOR t IN transfers
+            FOR t IN test_transfers
                 FILTER (t.contract_address == '{token_address}'
                         AND (t._from IN {formatted_address_list} OR t._to IN {formatted_address_list})
                         AND TO_NUMBER(t.transact_at) >= {start_timestamp}
@@ -195,7 +195,6 @@ def get_graph_data_by_timestamp(token_address, start_timestamp, end_timestamp, d
             address_to_cluster = {}
             cluster_balances = {}
 
-            dapp_address_count = {}
             dapp_addresses = []
             whale_address_count = {}
 
@@ -257,8 +256,10 @@ def get_graph_data_by_timestamp(token_address, start_timestamp, end_timestamp, d
                     formatted_address = "wallets/" + address
 
                     query = f"""
-                        FOR t IN transfers
-                            FILTER (t._from == '{formatted_address}' OR t._to == '{formatted_address}')
+                        FOR t IN test_transfers
+                            FILTER t.contract_address == '{token_address}'
+                            AND
+                            (t._from == '{formatted_address}' OR t._to == '{formatted_address}')
                             AND
                             TO_NUMBER(t.transact_at) >= {start_timestamp}
                             AND
