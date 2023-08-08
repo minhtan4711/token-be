@@ -31,7 +31,7 @@ def get_transfers_by_group(token_address, address_list, start_timestamp, end_tim
 
 def get_top_5_wallet(token_address, limit=5, offset=0):
     query = f"""
-    FOR transfer IN transfers
+    FOR transfer IN test_transfers
         FILTER transfer.contract_address == "{token_address}"
         COLLECT address = transfer._from INTO group
         LET numTransfers = LENGTH(group)
@@ -52,7 +52,7 @@ def get_top_5_wallet(token_address, limit=5, offset=0):
 
 def get_top_5_transfers(token_address, limit=5, offset=0):
     query = f"""
-    FOR transfer IN transfers
+    FOR transfer IN test_transfers
     FILTER transfer.contract_address == '{token_address}'
     SORT transfer.value DESC
     LIMIT {offset}, {limit}
