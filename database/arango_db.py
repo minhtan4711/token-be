@@ -4,16 +4,16 @@ from arango import ArangoClient
 client = ArangoClient()
 
 db = client.db("token_transfers_bsc", username='root', password='471100')
-tokens_collection = db.collection('tokens')
-dapps_collection = db.collection('dapps')
-token_wallets_collection = db.collection('token_wallets')
-transfers_collection = db.collection('transfers')
+tokens_collection = db.collection('test_tokens')
+dapps_collection = db.collection('test_dapps')
+token_wallets_collection = db.collection('test_token_wallets')
+transfers_collection = db.collection('test_transfers')
 
 
 def get_transfers_by_group(token_address, address_list, start_timestamp, end_timestamp):
     formatted_address_list = [f"wallets/{address}" for address in address_list]
     query = f"""
-            FOR t IN transfers
+            FOR t IN test_transfers
                 FILTER (t.contract_address == '{token_address}'
                         AND (t._from IN {formatted_address_list} OR t._to IN {formatted_address_list})
                         AND TO_NUMBER(t.transact_at) >= {start_timestamp}
@@ -31,7 +31,7 @@ def get_transfers_by_group(token_address, address_list, start_timestamp, end_tim
 
 def get_top_5_wallet(token_address, limit=5, offset=0):
     query = f"""
-    FOR transfer IN transfers
+    FOR transfer IN test_transfers
         FILTER transfer.contract_address == "{token_address}"
         COLLECT address = transfer._from INTO group
         LET numTransfers = LENGTH(group)
@@ -52,7 +52,7 @@ def get_top_5_wallet(token_address, limit=5, offset=0):
 
 def get_top_5_transfers(token_address, limit=5, offset=0):
     query = f"""
-    FOR transfer IN transfers
+    FOR transfer IN test_transfers
     FILTER transfer.contract_address == '{token_address}'
     SORT transfer.value DESC
     LIMIT {offset}, {limit}
@@ -64,7 +64,7 @@ def get_top_5_transfers(token_address, limit=5, offset=0):
 
 def get_dapps_by_token(token_address):
     query = f"""
-    FOR dapp IN dapps
+    FOR dapp IN test_dapps
     LET token_address_in_key = SPLIT(dapp._key, '_')[0]
     FILTER token_address_in_key == '{token_address}'
     RETURN {{
@@ -195,7 +195,6 @@ def get_graph_data_by_timestamp(token_address, start_timestamp, end_timestamp, d
             address_to_cluster = {}
             cluster_balances = {}
 
-            dapp_address_count = {}
             dapp_addresses = []
             whale_address_count = {}
 
@@ -257,8 +256,10 @@ def get_graph_data_by_timestamp(token_address, start_timestamp, end_timestamp, d
                     formatted_address = "wallets/" + address
 
                     query = f"""
-                        FOR t IN transfers
-                            FILTER (t._from == '{formatted_address}' OR t._to == '{formatted_address}')
+                        FOR t IN test_transfers
+                            FILTER t.contract_address == '{token_address}'
+                            AND
+                            (t._from == '{formatted_address}' OR t._to == '{formatted_address}')
                             AND
                             TO_NUMBER(t.transact_at) >= {start_timestamp}
                             AND
