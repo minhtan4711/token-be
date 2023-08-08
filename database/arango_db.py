@@ -4,10 +4,10 @@ from arango import ArangoClient
 client = ArangoClient()
 
 db = client.db("token_transfers_bsc", username='root', password='471100')
-tokens_collection = db.collection('tokens')
-dapps_collection = db.collection('dapps')
-token_wallets_collection = db.collection('token_wallets')
-transfers_collection = db.collection('transfers')
+tokens_collection = db.collection('test_tokens')
+dapps_collection = db.collection('test_dapps')
+token_wallets_collection = db.collection('test_token_wallets')
+transfers_collection = db.collection('test_transfers')
 
 
 def get_transfers_by_group(token_address, address_list, start_timestamp, end_timestamp):
@@ -64,7 +64,7 @@ def get_top_5_transfers(token_address, limit=5, offset=0):
 
 def get_dapps_by_token(token_address):
     query = f"""
-    FOR dapp IN dapps
+    FOR dapp IN test_dapps
     LET token_address_in_key = SPLIT(dapp._key, '_')[0]
     FILTER token_address_in_key == '{token_address}'
     RETURN {{
