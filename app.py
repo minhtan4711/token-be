@@ -9,10 +9,23 @@ from database.arango_db import get_dapps_by_token as get_dapps_by_token_from_db
 from database.arango_db import get_top_5_transfers as get_top_5_transfers_from_db
 from database.arango_db import get_top_5_wallet
 from database.arango_db import get_transfers_by_group as get_transfers_by_group_from_db
+from database.arango_db import get_dapp_at_timestamp as get_dapp_at_timestamp_from_db
 
 app = Sanic(__name__)
 app.config.CORS_ORIGINS = "*"
 app.config.CORS_ALLOW_HEADERS = "*"
+
+
+@app.route("/dapp-at-timestamp/<token_address>")
+async def get_dapp_at_timestamp(request, token_address):
+    start_timestamp = request.args.get('start_timestamp')
+    end_timestamp = request.args.get('end_timestamp')
+    result = get_dapp_at_timestamp_from_db(
+        token_address=token_address,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp
+    )
+    return json(result)
 
 
 @app.route("/group-transfer/<token_address>")
@@ -95,7 +108,8 @@ async def get_token_transfer(request, token_address):
 async def get_graph_data(request, token_address):
     start_timestamp = request.args.get('start_timestamp')
     end_timestamp = request.args.get('end_timestamp')
-    dapp_id = request.args.get('dapp_id')
+    dapp_id_list_str = request.args.get('dapp_id')
+    dapp_list = dapp_id_list_str.split(',')
 
     if not start_timestamp or not end_timestamp:
         return json({"error": "Both start_timestamp and end_timestamp are required to retrieve graph data."}, status=400)
@@ -104,7 +118,7 @@ async def get_graph_data(request, token_address):
         token_address=token_address,
         start_timestamp=int(start_timestamp),
         end_timestamp=int(end_timestamp),
-        dapp_id=dapp_id
+        dapp_ids=dapp_list
     )
     return json(graph_data)
 
